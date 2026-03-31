@@ -35,7 +35,7 @@ As of October 2023, Amazon SP-API no longer requires AWS IAM credentials. This s
 ## Installation
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/mansournorouzi/amazon-sp-mcp.git
 cd amazon-sp-mcp
 npm install
 npm run build

@@ -22,7 +22,7 @@
     "claude",
     "seller-central"
   ],
-  "author": "",
+  "author": "Mansour Norouzi",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
