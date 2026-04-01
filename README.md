@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server that connects Claude to Amazon Seller Central via the SP-API. Enables natural language queries for sales data, inventory, reports, fees, reimbursements, and analytics.
 
+> **Security Notice (March 31, 2026):** The `axios` npm package was briefly compromised in a supply chain attack. Malicious versions `1.14.1` and `0.30.4` were published between 00:21 and 03:15 UTC on March 31 before npm removed them. These versions contained a trojanized dependency (`plain-crypto-js`) that installed a remote access trojan. **This repo's axios dependency has been pinned to `1.14.0` (the last clean version).** If you ran `npm install` during the attack window, delete your `node_modules` folder and reinstall. See: [Snyk advisory](https://snyk.io/blog/axios-npm-package-compromised-supply-chain-attack-delivers-cross-platform/), [Datadog analysis](https://securitylabs.datadoghq.com/articles/axios-npm-supply-chain-compromise/).
+
 ## Key Feature: No AWS Credentials Required
 
 As of October 2023, Amazon SP-API no longer requires AWS IAM credentials. This server uses **LWA (Login with Amazon) OAuth 2.0 only**, making setup simpler and more secure.
