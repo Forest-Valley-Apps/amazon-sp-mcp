@@ -20,12 +20,14 @@ const getOrdersSchema = z.object({
   maxResults: z.number().optional().default(100).describe('Maximum number of orders to return (max 100)'),
 });
 
+const amazonOrderIdPattern = /^\d{3}-\d{7}-\d{7}$/;
+
 const getOrderDetailsSchema = z.object({
-  orderId: z.string().describe('The Amazon order ID (e.g., 111-1234567-1234567)'),
+  orderId: z.string().regex(amazonOrderIdPattern, 'Invalid Amazon order ID format (expected: 111-1234567-1234567)').describe('The Amazon order ID (e.g., 111-1234567-1234567)'),
 });
 
 const getOrderItemsSchema = z.object({
-  orderId: z.string().describe('The Amazon order ID'),
+  orderId: z.string().regex(amazonOrderIdPattern, 'Invalid Amazon order ID format (expected: 111-1234567-1234567)').describe('The Amazon order ID'),
 });
 
 // Tool definitions
@@ -76,16 +78,20 @@ export const orderTools = [
       const client = getSPAPIClient();
       const config = getConfig();
 
-      // Pagination: fetch ALL orders, not just first page
+      // Pagination: fetch orders up to maxResults cap
+      const maxResults = input.maxResults || 100;
       const allOrders: Order[] = [];
       let nextToken: string | undefined;
-      const maxPages = 20; // Safety limit (20 pages x 100 = 2000 orders max)
+      const maxPages = 20; // Safety limit
       let page = 0;
 
       do {
+        const remaining = maxResults - allOrders.length;
+        const pageSize = Math.min(remaining, 100);
+
         const queryParams: Record<string, unknown> = {
           MarketplaceIds: config.MARKETPLACE_ID,
-          MaxResultsPerPage: 100,
+          MaxResultsPerPage: pageSize,
         };
 
         if (nextToken) queryParams.NextToken = nextToken;
@@ -105,7 +111,12 @@ export const orderTools = [
         allOrders.push(...orders);
         nextToken = response.payload.NextToken;
         page++;
-      } while (nextToken && page < maxPages);
+      } while (nextToken && page < maxPages && allOrders.length < maxResults);
+
+      // Trim to exact maxResults in case the last page returned more than needed
+      if (allOrders.length > maxResults) {
+        allOrders.length = maxResults;
+      }
 
       return {
         content: [
@@ -157,7 +168,7 @@ export const orderTools = [
       const client = getSPAPIClient();
 
       const response = await client.get<GetOrderResponse>(
-        `/orders/v0/orders/${input.orderId}`,
+        `/orders/v0/orders/${encodeURIComponent(input.orderId)}`,
         undefined,
         { rateLimitCategory: 'orders' }
       );
@@ -217,7 +228,7 @@ export const orderTools = [
       const client = getSPAPIClient();
 
       const response = await client.get<GetOrderItemsResponse>(
-        `/orders/v0/orders/${input.orderId}/orderItems`,
+        `/orders/v0/orders/${encodeURIComponent(input.orderId)}/orderItems`,
         undefined,
         { rateLimitCategory: 'orderItems' }
       );

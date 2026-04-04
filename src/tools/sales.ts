@@ -1,7 +1,32 @@
 import { z } from 'zod';
 import { getSPAPIClient } from '../client/sp-api-client.js';
-import { getConfig } from '../config/index.js';
+import { getConfig, MARKETPLACE_IDS } from '../config/index.js';
 import type { GetOrdersResponse, Order } from '../types/sp-api.js';
+
+// Map marketplace IDs to their default currencies
+const MARKETPLACE_CURRENCY: Record<string, string> = {
+  [MARKETPLACE_IDS.US]: 'USD',
+  [MARKETPLACE_IDS.CA]: 'CAD',
+  [MARKETPLACE_IDS.MX]: 'MXN',
+  [MARKETPLACE_IDS.BR]: 'BRL',
+  [MARKETPLACE_IDS.UK]: 'GBP',
+  [MARKETPLACE_IDS.DE]: 'EUR',
+  [MARKETPLACE_IDS.FR]: 'EUR',
+  [MARKETPLACE_IDS.IT]: 'EUR',
+  [MARKETPLACE_IDS.ES]: 'EUR',
+  [MARKETPLACE_IDS.NL]: 'EUR',
+  [MARKETPLACE_IDS.SE]: 'SEK',
+  [MARKETPLACE_IDS.PL]: 'PLN',
+  [MARKETPLACE_IDS.BE]: 'EUR',
+  [MARKETPLACE_IDS.JP]: 'JPY',
+  [MARKETPLACE_IDS.AU]: 'AUD',
+  [MARKETPLACE_IDS.SG]: 'SGD',
+  [MARKETPLACE_IDS.IN]: 'INR',
+  [MARKETPLACE_IDS.AE]: 'AED',
+  [MARKETPLACE_IDS.SA]: 'SAR',
+  [MARKETPLACE_IDS.EG]: 'EGP',
+  [MARKETPLACE_IDS.TR]: 'TRY',
+};
 
 // Sales API response types
 interface OrderMetrics {
@@ -243,7 +268,7 @@ export const salesTools = [
         dailySales[day].units += units;
       }
 
-      const currency = shippedOrders[0]?.OrderTotal?.CurrencyCode || 'CAD';
+      const currency = shippedOrders[0]?.OrderTotal?.CurrencyCode || MARKETPLACE_CURRENCY[config.MARKETPLACE_ID] || 'USD';
       const avgOrderValue = shippedOrders.length > 0 ? totalSales / shippedOrders.length : 0;
 
       // Sort daily data by date

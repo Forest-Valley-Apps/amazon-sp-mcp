@@ -25,8 +25,10 @@ const getFinancialEventGroupsSchema = z.object({
   nextToken: z.string().optional().describe('Pagination token for next page of results'),
 });
 
+const amazonOrderIdPattern = /^\d{3}-\d{7}-\d{7}$/;
+
 const getOrderFinancialEventsSchema = z.object({
-  orderId: z.string().describe('The Amazon order ID (e.g., 111-1234567-1234567)'),
+  orderId: z.string().regex(amazonOrderIdPattern, 'Invalid Amazon order ID format (expected: 111-1234567-1234567)').describe('The Amazon order ID (e.g., 111-1234567-1234567)'),
   maxResults: z.number().optional().default(100).describe('Maximum number of results per page (max 100)'),
   nextToken: z.string().optional().describe('Pagination token for next page of results'),
 });
@@ -237,7 +239,7 @@ export const financeTools = [
       if (input.nextToken) queryParams.NextToken = input.nextToken;
 
       const response = await client.get<GetFinancialEventsResponse>(
-        `/finances/v0/orders/${input.orderId}/financialEvents`,
+        `/finances/v0/orders/${encodeURIComponent(input.orderId)}/financialEvents`,
         queryParams,
         { rateLimitCategory: 'finances' }
       );
