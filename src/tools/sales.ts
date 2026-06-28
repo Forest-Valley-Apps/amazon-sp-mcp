@@ -137,11 +137,14 @@ export const salesTools = [
       const metrics = response.payload || [];
 
       // Calculate totals
+      // NOTE: the Sales API returns totalSales.amount as a STRING. Adding it to a number
+      // with `+` performs string concatenation, which makes totals.totalSales a string and
+      // breaks the .toFixed() calls below. Coerce each amount to a number before summing.
       const totals = metrics.reduce(
         (acc, m) => ({
           totalUnits: acc.totalUnits + m.unitCount,
           totalOrders: acc.totalOrders + m.orderCount,
-          totalSales: acc.totalSales + m.totalSales.amount,
+          totalSales: acc.totalSales + Number(m.totalSales?.amount ?? 0),
         }),
         { totalUnits: 0, totalOrders: 0, totalSales: 0 }
       );
