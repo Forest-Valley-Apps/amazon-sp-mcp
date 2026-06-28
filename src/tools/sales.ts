@@ -223,7 +223,13 @@ export const salesTools = [
       let page = 0;
 
       const startDateTime = `${input.startDate}T00:00:00Z`;
-      const endDateTime = `${input.endDate}T23:59:59Z`;
+      // Orders v0 rejects a CreatedBefore that is not at least 2 minutes in the past, so an end date
+      // of today (whose 23:59:59 is in the future) would 400. Clamp it to now minus 2 minutes.
+      let endDateTime = `${input.endDate}T23:59:59Z`;
+      const maxBefore = new Date(Date.now() - 2 * 60 * 1000);
+      if (new Date(endDateTime) > maxBefore) {
+        endDateTime = maxBefore.toISOString();
+      }
 
       do {
         const queryParams: Record<string, unknown> = {
